@@ -1,0 +1,12 @@
+uvicorn storeapi.main:app --reload
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJrYW1hQHlhaG9vLmdyIiwiZXhwIjoxNzcyOTA0MjA3LCJ0eXBlIjoiY29uZmlybWF0aW9uIn0.QiUfO6vjJ7N1Ag9oLKOWayIMss43TgNDG0x5d3_iCBo
+kama@yahoo.gr trikala2
+
+create_post(body:str,logintoken:str,asyn_client:asyncClient)
+  response=asyn.client.post(/post,json={"body"=body},headers]{aitj
+
+  return response.json()
+
+  respoan      {id:confirm<=response.json().items
+
+  select posts=(sqlalchemy.select(post_table,
