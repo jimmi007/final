@@ -1,12 +1,17 @@
 uvicorn storeapi.main:app --reload
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJrYW1hQHlhaG9vLmdyIiwiZXhwIjoxNzcyOTA0MjA3LCJ0eXBlIjoiY29uZmlybWF0aW9uIn0.QiUfO6vjJ7N1Ag9oLKOWayIMss43TgNDG0x5d3_iCBo
-kama@yahoo.gr trikala2
 
-create_post(body:str,logintoken:str,asyn_client:asyncClient)
-  response=asyn.client.post(/post,json={"body"=body},headers]{aitj
 
-  return response.json()
+  uvicorn storeapi.main:app --host 0.0.0.0 --port $PORT
 
-  respoan      {id:confirm<=response.json().items
+  ENV_STATE=prod
 
-  select posts=(sqlalchemy.select(post_table,
+PROD_DATABASE_URL=postgresql://user:password@host:5432/dbname
+PROD_DB_FORCE_ROLL_BACK=False
+PROD_LOGTAIL_API_KEY=
+
+PROD_B2_KEY_ID=232272ccff9c
+PROD_B2_APPLICATION_KEY=0039f994a1c6522d7b2927669337b7705e6ef7b89b
+PROD_B2_BUCKET_NAME=mitsos
+
+PROD_MAILGUN_API_KEY=
+PROD_MAILGUN_DOMAIN=
