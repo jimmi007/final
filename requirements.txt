@@ -14,3 +14,8 @@ passlib[bcrypt]
 httpx
 aiofiles
 b2sdk
+fastapi
+uvicorn
+sqlalchemy
+databases
+psycopg2-binary
