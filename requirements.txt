@@ -13,7 +13,7 @@ python-multipart
 passlib[bcrypt]
 httpx
 aiofiles
-b2sdkps
+b2sdk
 fastapi
 uvicorn
 sqlalchemy
