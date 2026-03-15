@@ -49,5 +49,9 @@ def get_config(env_state: str):
 
 
 config = get_config(BaseConfig().ENV_STATE or "dev")
+if config.ENV_STATE == "prod" and (
+    not config.DATABASE_URL or not config.DATABASE_URL.startswith("postgresql")
+):
+    raise RuntimeError("Production must use PostgreSQL DATABASE_URL")
 print("ENV:", BaseConfig().ENV_STATE)
 print("DB:", config.DATABASE_URL)
