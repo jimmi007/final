@@ -76,6 +76,7 @@ def get_subject_for_token_type(
 
 
 def get_password_hash(password: str) -> str:
+    password=password.encode("utf-8")[:72].decode("utf-8","ignore")
     return pwd_context.hash(password)
 
 
