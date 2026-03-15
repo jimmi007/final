@@ -13,7 +13,7 @@ python-multipart
 passlib[bcrypt]
 httpx
 aiofiles
-b2sdk
+b2sdkps
 fastapi
 uvicorn
 sqlalchemy
@@ -22,3 +22,4 @@ psycopg2-binary
 psycopg2
 databases[asyncpg]
 bcrypt== 4.0.1
+passlib[crypt]==1.7.4
