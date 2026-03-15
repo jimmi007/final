@@ -19,3 +19,5 @@ uvicorn
 sqlalchemy
 databases
 psycopg2-binary
+psycopg2
+databases[asyncpg]

@@ -6,16 +6,13 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 
 from storeapi.config import config
-from storeapi.database import database
+from storeapi.database import database, engine, metadata
 from storeapi.logging_conf import configure_logging
 from storeapi.routers.post import router as post_router
 from storeapi.routers.upload import router as upload_router
 from storeapi.routers.user import router as user_router
 
 logger = logging.getLogger(__name__)
-from storeapi.database import engine, metadata
-
-@asynccontextmanager
 
 
 @asynccontextmanager
