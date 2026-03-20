@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 sentry_sdk.init(
     dsn="https://03595b71cc1809e83351a8fb21935173@o4511077739397120.ingest.de.sentry.io/4511077742870608",
-    integrations=[FastApiIntegration(), SentryAsgiMiddleware()],
+    integrations=[FastApiIntegration(), ],
     traces_sample_rate=1.0,
     # Add data like request headers and IP for users,
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
-    send_default_pii=True,
+
 )
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,7 +34,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-app.add_middleware(SentryAsgiMiddleware)
+
 app.add_middleware(CorrelationIdMiddleware)
 
 app.include_router(post_router)
