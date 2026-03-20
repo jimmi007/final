@@ -5,6 +5,7 @@ from sentry_sdk.integrations.asgi  import SentryAsgiMiddleware
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 
 from storeapi.config import config
 from storeapi.database import database, engine, metadata
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 sentry_sdk.init(
     dsn="https://03595b71cc1809e83351a8fb21935173@o4511077739397120.ingest.de.sentry.io/4511077742870608",
+    integrations=[FastApiIntegration(), SentryAsgiMiddleware()],
     traces_sample_rate=1.0,
     # Add data like request headers and IP for users,
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
