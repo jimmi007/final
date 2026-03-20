@@ -17,7 +17,7 @@ from storeapi.routers.user import router as user_router
 logger = logging.getLogger(__name__)
 
 sentry_sdk.init(
-    dsn="https://03595b71cc1809e83351a8fb21935173@o4511077739397120.ingest.de.sentry.io/4511077742870608",
+    dsn="https://77a950e5403b7a82ddf9f182fa1e500e@o4511077739397120.ingest.de.sentry.io/4511077857296464",
     integrations=[FastApiIntegration(), ],
     traces_sample_rate=1.0,
     # Add data like request headers and IP for users,
