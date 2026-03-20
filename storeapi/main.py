@@ -1,6 +1,6 @@
 import logging
 from contextlib import asynccontextmanager
-
+import sentry_sdk
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
@@ -14,7 +14,12 @@ from storeapi.routers.user import router as user_router
 
 logger = logging.getLogger(__name__)
 
-
+sentry_sdk.init(
+    dsn="https://03595b71cc1809e83351a8fb21935173@o4511077739397120.ingest.de.sentry.io/4511077742870608",
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+)
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     configure_logging()
@@ -31,6 +36,13 @@ app.include_router(post_router)
 app.include_router(upload_router)
 app.include_router(user_router)
 
+@app.get("/sentry-debug")
+async def trigger_error():
+    division_by_zero = 1 / 0
+    return division_by_zero
+    # response={"mistake":"division error"}
+    # logger(f"its mistake")
+    # return response
 
 @app.exception_handler(HTTPException)
 async def http_exception_handle_logging(request, exc):
