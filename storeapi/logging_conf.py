@@ -1,3 +1,4 @@
+
 import logging
 from logging.config import dictConfig
 
@@ -21,12 +22,9 @@ class EmailObfuscationFilter(logging.Filter):
         return True
 
 
-handlers = ["default", "rotating_file"]
-if isinstance(config, ProdConfig):
-    handlers = ["default", "rotating_file", "logtail"]
-
-
 def configure_logging() -> None:
+    is_prod = isinstance(config, ProdConfig)
+
     dictConfig(
         {
             "version": 1,
@@ -34,60 +32,76 @@ def configure_logging() -> None:
             "filters": {
                 "correlation_id": {
                     "()": "asgi_correlation_id.CorrelationIdFilter",
-                    "uuid_length": 8 if isinstance(config, DevConfig) else 32,
+                    "uuid_length": 32 if is_prod else 8,
                     "default_value": "-",
                 },
                 "email_obfuscation": {
                     "()": EmailObfuscationFilter,
-                    "obfuscated_length": 2 if isinstance(config, DevConfig) else 0,
+                    "obfuscated_length": 0 if is_prod else 2,
                 },
             },
             "formatters": {
                 "console": {
                     "class": "logging.Formatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
-                    "format": "(%(correlation_id)s) %(name)s:%(lineno)d - %(message)s",
+                    "format": "%(asctime)s | %(levelname)s | %(correlation_id)s | %(name)s:%(lineno)d | %(message)s",
                 },
                 "file": {
                     "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
-                    "format": "%(asctime)s %(msecs)03d %(levelname)s %(correlation_id)s %(name)s %(lineno)d %(message)s",
+                    "format": "%(asctime)s %(levelname)s %(correlation_id)s %(name)s %(lineno)d %(message)s",
                 },
             },
             "handlers": {
-                "default": {
-                    "class": "rich.logging.RichHandler",
-                    "level": "DEBUG",
-                    "formatter": "console",
-                    "filters": ["correlation_id", "email_obfuscation"]
-                },
-                "rotating_file": {
-                    "class": "logging.handlers.RotatingFileHandler",
-                    "level": "DEBUG",
-                    "formatter": "file",
-                    "filename": "storeapi.log",
-                    "maxBytes": 1024 * 1024,  # 1MB
-                    "backupCount": 5,
-                    "encoding": "utf8",
-                    "filters": ["correlation_id", "email_obfuscation"]
-                },
-                "logtail": {
-                    "class": "logtail.LogtailHandler",
+                # IMPORTANT: Αυτό βλέπει το Render (stdout)
+                "console": {
+                    "class": "logging.StreamHandler",
                     "level": "DEBUG",
                     "formatter": "console",
                     "filters": ["correlation_id", "email_obfuscation"],
-                    "source_token": config.LOGTAIL_API_KEY
-                }
+                    "stream": "ext://sys.stdout",
+                },
+                # Log file (μόνο για local/production storage)
+                "file": {
+                    "class": "logging.handlers.RotatingFileHandler",
+                    "level": "INFO",
+                    "formatter": "file",
+                    "filename": "storeapi.log",
+                    "maxBytes": 1024 * 1024,
+                    "backupCount": 5,
+                    "encoding": "utf8",
+                    "filters": ["correlation_id", "email_obfuscation"],
+                },
+            },
+            # ROOT logger (πολύ σημαντικό για Render)
+            "root": {
+                "handlers": ["console"],
+                "level": "DEBUG",
             },
             "loggers": {
-                "uvicorn": {"handlers": ["default", "rotating_file"], "level": "INFO"},
-                "storeapi": {
-                    "handlers": handlers,
-                    "level": "DEBUG" if isinstance(config, DevConfig) else "INFO",
-                    "propagate": False
+                "uvicorn": {
+                    "handlers": ["console"],
+                    "level": "INFO",
+                    "propagate": False,
                 },
-                "databases": {"handlers": ["default"], "level": "WARNING"},
-                "aiosqlite": {"handlers": ["default"], "level": "WARNING"}
-            }
+                "storeapi": {
+                    "handlers": ["console", "file"] if is_prod else ["console"],
+                    "level": "INFO" if is_prod else "DEBUG",
+                    "propagate": False,
+                },
+                "databases": {
+                    "handlers": ["console"],
+                    "level": "WARNING",
+                    "propagate": False,
+                },
+                "aiosqlite": {
+                    "handlers": ["console"],
+                    "level": "WARNING",
+                    "propagate": False,
+                },
+            },
         }
     )
+
+
+

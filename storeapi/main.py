@@ -14,12 +14,15 @@ from storeapi.routers.post import router as post_router
 from storeapi.routers.upload import router as upload_router
 from storeapi.routers.user import router as user_router
 
-logger = logging.getLogger(__name__)
+
+configure_logging()
+logger = logging.getLogger("storeapi")
 
 sentry_sdk.init(
     dsn="https://77a950e5403b7a82ddf9f182fa1e500e@o4511077739397120.ingest.de.sentry.io/4511077857296464",
-    integrations=[FastApiIntegration(), ],
+    integrations=[FastApiIntegration()],
     traces_sample_rate=1.0,
+    profiles_sample_rate=1.0,
     # Add data like request headers and IP for users,
     # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
 
@@ -48,6 +51,15 @@ async def trigger_error():
     # response={"mistake":"division error"}
     # logger(f"its mistake")
     # return response
+
+
+@app.get("/log-test")
+def log_test():
+    logger.debug("DEBUG")
+    logger.info("INFO")
+    logger.warning("WARNING")
+    logger.error("ERROR")
+    return {"ok": True}
 
 @app.exception_handler(HTTPException)
 async def http_exception_handle_logging(request, exc):
