@@ -1,14 +1,14 @@
-
 import logging
+import os
 from logging.config import dictConfig
 
-from storeapi.config import DevConfig, ProdConfig, config
+from storeapi.config import config
 
 
 def obfuscated(email: str, obfuscated_length: int) -> str:
-    characters = email[:obfuscated_length]
     first, last = email.split("@")
-    return characters + ("*" * (len(first) - obfuscated_length)) + "@" + last
+    visible = first[:obfuscated_length]
+    return visible + ("*" * (len(first) - obfuscated_length)) + "@" + last
 
 
 class EmailObfuscationFilter(logging.Filter):
@@ -17,13 +17,14 @@ class EmailObfuscationFilter(logging.Filter):
         self.obfuscated_length = obfuscated_length
 
     def filter(self, record: logging.LogRecord) -> bool:
-        if "email" in record.__dict__:
+        if hasattr(record, "email"):
             record.email = obfuscated(record.email, self.obfuscated_length)
         return True
 
 
-def configure_logging() -> None:
-    is_prod = isinstance(config, ProdConfig)
+def configure_logging():
+    is_prod = config.ENV == "production"
+    LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
     dictConfig(
         {
@@ -43,29 +44,28 @@ def configure_logging() -> None:
             "formatters": {
                 "console": {
                     "class": "logging.Formatter",
-                    "datefmt": "%Y-%m-%dT%H:%M:%S",
+                    "datefmt": "%Y-%m-%d %H:%M:%S",
                     "format": "%(asctime)s | %(levelname)s | %(correlation_id)s | %(name)s:%(lineno)d | %(message)s",
                 },
-                "file": {
+                "json": {
                     "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
-                    "datefmt": "%Y-%m-%dT%H:%M:%S",
                     "format": "%(asctime)s %(levelname)s %(correlation_id)s %(name)s %(lineno)d %(message)s",
                 },
             },
             "handlers": {
-                # IMPORTANT: Αυτό βλέπει το Render (stdout)
+                # Αυτό βλέπει το Render
                 "console": {
                     "class": "logging.StreamHandler",
-                    "level": "DEBUG",
+                    "level": LOG_LEVEL,
                     "formatter": "console",
                     "filters": ["correlation_id", "email_obfuscation"],
                     "stream": "ext://sys.stdout",
                 },
-                # Log file (μόνο για local/production storage)
+                # File logs (μόνο local ή αν έχεις disk)
                 "file": {
                     "class": "logging.handlers.RotatingFileHandler",
                     "level": "INFO",
-                    "formatter": "file",
+                    "formatter": "json",
                     "filename": "storeapi.log",
                     "maxBytes": 1024 * 1024,
                     "backupCount": 5,
@@ -73,15 +73,29 @@ def configure_logging() -> None:
                     "filters": ["correlation_id", "email_obfuscation"],
                 },
             },
-            # ROOT logger (πολύ σημαντικό για Render)
             "root": {
                 "handlers": ["console"],
-                "level": "DEBUG",
+                "level": LOG_LEVEL,
             },
             "loggers": {
                 "uvicorn": {
-                    "handlers": ["console"],
-                    "level": "INFO",
+                    "level": "WARNING",
+                    "propagate": False,
+                },
+                "uvicorn.error": {
+                    "level": "ERROR",
+                    "propagate": False,
+                },
+                "uvicorn.access": {
+                    "level": "WARNING",
+                    "propagate": False,
+                },
+                "sqlalchemy.engine": {
+                    "level": "WARNING",
+                    "propagate": False,
+                },
+                "sentry_sdk": {
+                    "level": "ERROR",
                     "propagate": False,
                 },
                 "storeapi": {
@@ -89,19 +103,8 @@ def configure_logging() -> None:
                     "level": "INFO" if is_prod else "DEBUG",
                     "propagate": False,
                 },
-                "databases": {
-                    "handlers": ["console"],
-                    "level": "WARNING",
-                    "propagate": False,
-                },
-                "aiosqlite": {
-                    "handlers": ["console"],
-                    "level": "WARNING",
-                    "propagate": False,
-                },
             },
         }
     )
-
 
 
