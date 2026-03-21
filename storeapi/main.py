@@ -26,7 +26,7 @@ logger = logging.getLogger("storeapi")
 # SENTRY
 if config.SENTRY_DSN:
     sentry_sdk.init(
-        dsn=config.SENTRY_DSN,
+        dsn="https://b3240e57caf43a4a6212572c66ecbfad@o4511077739397120.ingest.de.sentry.io/4511083349803088",
         integrations=[FastApiIntegration()],
         traces_sample_rate=1.0,
         profiles_sample_rate=1.0,
