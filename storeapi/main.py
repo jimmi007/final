@@ -34,7 +34,8 @@ if config.SENTRY_DSN:
     logger.info("Sentry initialized")
 else:
     logger.info("Sentry NOT initialized")
-
+config.MAILGUN_API_KEY
+config.MAILGUN_DOMAIN
 
 # DB lifecycle
 @asynccontextmanager
