@@ -13,6 +13,7 @@ from storeapi.logging_conf import configure_logging
 from storeapi.routers.post import router as post_router
 from storeapi.routers.upload import router as upload_router
 from storeapi.routers.user import router as user_router
+import os
 
 
 configure_logging()
