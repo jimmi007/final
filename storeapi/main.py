@@ -1,40 +1,56 @@
 import logging
+import os
 from contextlib import asynccontextmanager
+
 import sentry_sdk
-from sentry_sdk.integrations.asgi  import SentryAsgiMiddleware
+from sentry_sdk.integrations.fastapi import FastApiIntegration
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
-from sentry_sdk.integrations.fastapi import FastApiIntegration
 
-from storeapi.config import config, DevConfig, ProdConfig
+from storeapi.config import config
 from storeapi.database import database, engine, metadata
-from storeapi.logging_conf import configure_logging
 from storeapi.routers.post import router as post_router
 from storeapi.routers.upload import router as upload_router
 from storeapi.routers.user import router as user_router
-import os
 
 
-configure_logging()
+# LOGGING -> να φαίνονται στο Render
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s | %(name)s | %(message)s",
+)
 logger = logging.getLogger("storeapi")
 
-sentry_sdk.init(
-    dsn="https://77a950e5403b7a82ddf9f182fa1e500e@o4511077739397120.ingest.de.sentry.io/4511077857296464",
-    integrations=[FastApiIntegration()],
-    traces_sample_rate=1.0,
-    profiles_sample_rate=1.0,
-    # Add data like request headers and IP for users,
-    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
 
-)
+# SENTRY
+if config.SENTRY_DSN:
+    sentry_sdk.init(
+        dsn=config.SENTRY_DSN,
+        integrations=[FastApiIntegration()],
+        traces_sample_rate=1.0,
+        profiles_sample_rate=1.0,
+    )
+    logger.info("Sentry initialized")
+else:
+    logger.info("Sentry NOT initialized")
+
+
+# DB lifecycle
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    configure_logging()
+    logger.info("Starting app...")
+    logger.info(f"ENV_STATE: {config.ENV_STATE}")
+    logger.info(f"DATABASE_URL exists: {config.DATABASE_URL is not None}")
+
     metadata.create_all(engine)
     await database.connect()
+    logger.info("Database connected")
+
     yield
+
     await database.disconnect()
+    logger.info("Database disconnected")
 
 
 app = FastAPI(lifespan=lifespan)
@@ -45,36 +61,22 @@ app.include_router(post_router)
 app.include_router(upload_router)
 app.include_router(user_router)
 
+
 @app.get("/sentry-debug")
 async def trigger_error():
-    division_by_zero = 1 / 0
-    return division_by_zero
-    # response={"mistake":"division error"}
-    # logger(f"its mistake")
-    # return response
+    1 / 0
 
 
 @app.get("/log-test")
 def log_test():
-    logger.debug("DEBUG")
-    logger.info("INFO")
-    logger.warning("WARNING")
-    logger.error("ERROR")
+    logger.debug("DEBUG log")
+    logger.info("INFO log")
+    logger.warning("WARNING log")
+    logger.error("ERROR log")
     return {"ok": True}
+
 
 @app.exception_handler(HTTPException)
 async def http_exception_handle_logging(request, exc):
     logger.error(f"HTTPException: {exc.status_code} {exc.detail}")
     return await http_exception_handler(request, exc)
-
-
-print(config.B2_BUCKET_NAME)
-print(config.DATABASE_URL)
-print("ENV_STATE:", os.getenv("ENV_STATE"))
-print("DATABASE_URL:", os.getenv("DATABASE_URL"))
-print("SENTRY_DSN:", os.getenv("SENTRY_DSN"))
-
-if os.getenv("ENV_STATE") == "prod":
-    config = ProdConfig()
-else:
-    config = DevConfig()
