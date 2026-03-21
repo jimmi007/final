@@ -7,7 +7,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from sentry_sdk.integrations.fastapi import FastApiIntegration
 
-from storeapi.config import config
+from storeapi.config import config, DevConfig, ProdConfig
 from storeapi.database import database, engine, metadata
 from storeapi.logging_conf import configure_logging
 from storeapi.routers.post import router as post_router
@@ -73,3 +73,8 @@ print(config.DATABASE_URL)
 print("ENV_STATE:", os.getenv("ENV_STATE"))
 print("DATABASE_URL:", os.getenv("DATABASE_URL"))
 print("SENTRY_DSN:", os.getenv("SENTRY_DSN"))
+
+if os.getenv("ENV_STATE") == "prod":
+    config = ProdConfig()
+else:
+    config = DevConfig()

@@ -7,12 +7,10 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class BaseConfig(BaseSettings):
-    ENV_STATE: Optional[str] = None
-
-    """Loads the dotenv file. Including this is necessary to get
-    pydantic to load a .env file."""
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
-
+    ENVIRONMENT: str = "development"
+    DATABASE_URL: str
+    SECRET_KEY: str
+    SENTRY_DSN: str | None = None
 
 class GlobalConfig(BaseConfig):
     DATABASE_URL: Optional[str] = None
@@ -27,12 +25,12 @@ class GlobalConfig(BaseConfig):
     SENTRY_DSN:Optional[str] = None
 
 
-class DevConfig(GlobalConfig):
-    model_config = SettingsConfigDict(env_prefix="DEV_",extra="ignore")
+class DevConfig(BaseConfig):
+    ENVIRONMENT: str = "development"
 
 
-class ProdConfig(GlobalConfig):
-    model_config = SettingsConfigDict(env_prefix="PROD_",extra="ignore")
+class ProdConfig(BaseConfig):
+    ENVIRONMENT: str = "production"
 
 
 class TestConfig(GlobalConfig):
