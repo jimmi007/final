@@ -69,3 +69,6 @@ async def http_exception_handle_logging(request, exc):
 
 print(config.B2_BUCKET_NAME)
 print(config.DATABASE_URL)
+print("ENV_STATE:", os.getenv("ENV_STATE"))
+print("DATABASE_URL:", os.getenv("DATABASE_URL"))
+print("SENTRY_DSN:", os.getenv("SENTRY_DSN"))
