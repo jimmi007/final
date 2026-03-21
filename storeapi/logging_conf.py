@@ -23,7 +23,7 @@ class EmailObfuscationFilter(logging.Filter):
 
 
 def configure_logging():
-    is_prod = config.ENV == "production"
+    is_prod = config.ENVIRONMENT == "production"
     LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO").upper()
 
     dictConfig(
