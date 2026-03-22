@@ -64,3 +64,10 @@ async def confirm_email(token: str):
 
     await database.execute(query)
     return {"detail": "User confirmed"}
+
+
+@router.get("/delete/db")
+async def delete_db():
+    metadata.drop_all(bind=engine)
+    metadata.create_all(bind=engine)
+    return ({"detail": "database successfully deleted"})
