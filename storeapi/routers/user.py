@@ -12,6 +12,7 @@ from storeapi.security import (
     get_subject_for_token_type,
     get_user,
 )
+from storeapi.database import metadata,engine
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status, Depends
 from fastapi.security import OAuth2PasswordRequestForm
 logger = logging.getLogger(__name__)
