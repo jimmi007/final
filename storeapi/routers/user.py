@@ -66,7 +66,7 @@ async def confirm_email(token: str):
     return {"detail": "User confirmed"}
 
 
-@router.get("/delete/db")
+@router.delete("/delete/db")
 async def delete_db():
     metadata.drop_all(bind=engine)
     metadata.create_all(bind=engine)
