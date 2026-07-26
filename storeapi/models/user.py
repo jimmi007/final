@@ -1,47 +1,27 @@
-from typing import Optional
-
 from pydantic import BaseModel, ConfigDict
 
 
-class UserPostIn(BaseModel):
-    body: str
-    image_url: Optional[str] = None
+class UserIn(BaseModel):
+    email: str
+    password: str
 
 
-class UserPost(UserPostIn):
+class User(UserIn):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    user_id: int
+    confirmed: bool
 
 
-class UserPostWithLikes(UserPost):
-    model_config = ConfigDict(from_attributes=True)
-
-    likes: int
-
-
-class CommentIn(BaseModel):
-    body: str
-    post_id: int
+class UserLogin(BaseModel):
+    email: str
+    password: str
 
 
-class Comment(CommentIn):
-    model_config = ConfigDict(from_attributes=True)
-
-    id: int
-    user_id: int
+class UserConfirmation(BaseModel):
+    detail: str
 
 
-class UserPostWithComments(BaseModel):
-    post: UserPostWithLikes
-    comments: list[Comment]
-
-
-class PostLikeIn(BaseModel):
-    post_id: int
-
-
-class PostLike(PostLikeIn):
-    id: int
-    user_id: int
+class Token(BaseModel):
+    access_token: str
+    token_type: str
