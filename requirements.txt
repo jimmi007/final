@@ -15,7 +15,7 @@ httpx
 aiofiles
 
 b2sdk
-
+email-validator
 b2sdk
 fastapi
 uvicorn
