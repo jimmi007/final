@@ -4,16 +4,27 @@ import sqlalchemy
 from storeapi.config import config
 
 metadata = sqlalchemy.MetaData()
+<<<<<<< HEAD
 # είναι ένα δοχείο (container) που κρατάει πληροφορίες για όλους τους πίνακες της βάσης
+=======
+
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 post_table = sqlalchemy.Table(
     "posts",
     metadata,
     sqlalchemy.Column("id", sqlalchemy.Integer, primary_key=True),
     sqlalchemy.Column("body", sqlalchemy.String),
+<<<<<<< HEAD
     sqlalchemy.Column("user_id", sqlalchemy.Integer),
     sqlalchemy.Column("image_url", sqlalchemy.String, nullable=True),
 )
 # Γράφουμε τις στήλες του πίνακα και τι ονόματα έχει..ονομάζουμε το πίνακα post_table
+=======
+    sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False),
+    sqlalchemy.Column("image_url", sqlalchemy.String)
+)
+
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 user_table = sqlalchemy.Table(
     "users",
     metadata,
@@ -41,6 +52,7 @@ like_table = sqlalchemy.Table(
     sqlalchemy.Column("user_id", sqlalchemy.ForeignKey("users.id"), nullable=False)
 )
 
+<<<<<<< HEAD
 # Μόνο η SQLite χρειάζεται check_same_thread=False
 connect_args = (
     {"check_same_thread": False}
@@ -64,3 +76,18 @@ database = databases.Database(
 # Εδώ χρησιμοποιείς τη βιβλιοθήκη databases.Άρα η βάση επιστρέφει στην αρχική κατάσταση.
 # metadata.create_all(engine) → δημιουργεί τους πίνακες./Το metadata περιέχει όλα τα tables.
 # Χρησιμοποιείται πολύ στα tests με το rollback.database = Database(...) → δημιουργεί το αντικείμενο που θα χρησιμοποιείς μέσα στο FastAPI για όλα τα queries.
+=======
+if "sqlite" in config.DATABASE_URL:
+    engine = sqlalchemy.create_engine(
+        config.DATABASE_URL,
+        connect_args={"check_same_thread": False}
+    )
+else:
+    engine = sqlalchemy.create_engine(config.DATABASE_URL)
+
+metadata.create_all(engine)
+db_args= {"min_size":1,"max_size":3} if "postgres" in config.DATABASE_URL else {}
+database = databases.Database(
+    config.DATABASE_URL, force_rollback=config.DB_FORCE_ROLL_BACK,**db_args
+)
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc

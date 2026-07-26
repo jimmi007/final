@@ -12,6 +12,7 @@ router = APIRouter()
 CHUNK_SIZE = 1024 * 1024
 
 
+<<<<<<< HEAD
 @router.post("/upload", status_code=201)
 async def upload_file(file: UploadFile):
     try:
@@ -36,3 +37,37 @@ async def upload_file(file: UploadFile):
 # 3.Διαβάζει τα chunk από το Upload file,και τα γράφει στο filename.o f είναι ο φάκελος που λαμβάνει το
 # 3.Διαβάζει τα chunk από το Upload file,και τα γράφει στο temp_file.
 # 4.Παίρνει το temp_file(filename) και και το όνομα του και το ανεβάζει στο b2(cloud) και επιστρέφει ιστοσελίδα
+=======
+
+import os
+import tempfile
+
+@router.post("/upload", status_code=201)
+async def upload_file(file: UploadFile):
+    try:
+        temp_file = tempfile.NamedTemporaryFile(delete=False)
+        filename = temp_file.name
+        temp_file.close()
+
+        logger.info(f"Saving uploaded file temporarily to {filename}")
+
+        async with aiofiles.open(filename, "wb") as f:
+            while chunk := await file.read(CHUNK_SIZE):
+                await f.write(chunk)
+
+        file_url = b2_upload_file(local_file=filename, file_name=file.filename)
+
+        os.remove(filename)
+
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
+
+    return {
+        "detail": f"Successfully uploaded {file.filename}",
+        "file_url": file_url
+    }
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc

@@ -10,5 +10,15 @@
         </list>
       </option>
     </inspection_tool>
+<<<<<<< HEAD
+=======
+    <inspection_tool class="PyUnresolvedReferencesInspection" enabled="true" level="WARNING" enabled_by_default="true">
+      <option name="ignoredIdentifiers">
+        <list>
+          <option value="storeapi.routers.*" />
+        </list>
+      </option>
+    </inspection_tool>
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
   </profile>
 </component>

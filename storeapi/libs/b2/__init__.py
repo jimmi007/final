@@ -12,7 +12,11 @@ def b2_api():
     logger.debug("Creating and authorizing B2 API")
     info = b2.InMemoryAccountInfo()
     b2_api = b2.B2Api(info)
+<<<<<<< HEAD
     logger.info(config.B2_BUCKET_NAME)
+=======
+
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
     b2_api.authorize_account("production", config.B2_KEY_ID, config.B2_APPLICATION_KEY)
     return b2_api
 

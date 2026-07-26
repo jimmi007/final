@@ -17,7 +17,11 @@ from storeapi.models.post import (
 )
 from storeapi.models.user import User
 from storeapi.security import get_current_user
+<<<<<<< HEAD
 
+=======
+from storeapi.tasks import generate_and_add_to_post
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 
 router = APIRouter()
 
@@ -41,7 +45,10 @@ async def find_post(post_id: int):
 
 
 @router.post("/post", response_model=UserPost, status_code=201)
+<<<<<<< HEAD
 # "Το JSON που θα επιστρέψω πρέπει να έχει τη μορφή του UserPost."
+=======
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 async def create_post(
     post: UserPostIn,
     current_user: Annotated[User, Depends(get_current_user)],
@@ -52,9 +59,13 @@ async def create_post(
     logger.info("Creating post")
 
     data = {**post.model_dump(), "user_id": current_user.id}
+<<<<<<< HEAD
     #  post: UserPostIn,έβαλα post
     query = post_table.insert().values(data)
     # τι θα βάλει μέσα στο πίνακα
+=======
+    query = post_table.insert().values(data)
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 
     logger.debug(query)
 
@@ -78,8 +89,11 @@ class PostSorting(str, Enum):
 
 
 @router.get("/post", response_model=list[UserPostWithLikes])
+<<<<<<< HEAD
 # αυτό που περιμένω είναι πίνακας άρα μια λίστα αντικειμένων(list[UserPostWithLikes])
 # -που έχει βάσει το userpost+like
+=======
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 async def get_all_posts(sorting: PostSorting = PostSorting.new):
     logger.info("Getting all posts")
 
@@ -112,7 +126,10 @@ async def create_comment(
 
     last_record_id = await database.execute(query)
     return {**data, "id": last_record_id}
+<<<<<<< HEAD
 #   βάζουμε και το νούμερο εγγραφής στο query.
+=======
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 
 
 @router.get("/post/{post_id}/comment", response_model=list[Comment])
@@ -160,4 +177,8 @@ async def like_post(
     logger.debug(query)
 
     last_record_id = await database.execute(query)
+<<<<<<< HEAD
     return {**data, "id": last_record_id}
+=======
+    return {**data, "id": last_record_id}
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc

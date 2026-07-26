@@ -16,7 +16,11 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"])
 
 
+<<<<<<< HEAD
 def create_unauthorized_exception(detail: str) -> HTTPException:
+=======
+def create_credentials_exception(detail: str) -> HTTPException:
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
     return HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail=detail,
@@ -56,6 +60,7 @@ def get_subject_for_token_type(
     token: str, type: Literal["access", "confirmation"]
 ) -> str:
     try:
+<<<<<<< HEAD
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
     except ExpiredSignatureError as e:
         raise create_unauthorized_exception("Token has expired") from e
@@ -69,6 +74,21 @@ def get_subject_for_token_type(
     token_type = payload.get("type")
     if token_type is None or token_type != type:
         raise create_unauthorized_exception(
+=======
+        payload = jwt.decode(token, key=SECRET_KEY, algorithms=[ALGORITHM])
+    except ExpiredSignatureError as e:
+        raise create_credentials_exception("Token has expired") from e
+    except JWTError as e:
+        raise create_credentials_exception("Invalid token") from e
+
+    email = payload.get("sub")
+    if email is None:
+        raise create_credentials_exception("Token is missing 'sub' field")
+
+    token_type = payload.get("type")
+    if token_type is None or token_type != type:
+        raise create_credentials_exception(
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
             f"Token has incorrect type, expected '{type}'"
         )
 
@@ -76,6 +96,10 @@ def get_subject_for_token_type(
 
 
 def get_password_hash(password: str) -> str:
+<<<<<<< HEAD
+=======
+    password=password.encode("utf-8")[:72].decode("utf-8","ignore")
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
     return pwd_context.hash(password)
 
 
@@ -95,19 +119,34 @@ async def authenticate_user(email: str, password: str):
     logger.debug("Authenticating user", extra={"email": email})
     user = await get_user(email)
     if not user:
+<<<<<<< HEAD
         raise create_unauthorized_exception("Invalid email or password")
     if not verify_password(password, user.password):
         raise create_unauthorized_exception("Invalid email or password")
     if not user.confirmed:
         raise create_unauthorized_exception("User has not confirmed email")
+=======
+        raise create_credentials_exception("Invalid email or password")
+    if not verify_password(password, user.password):
+        raise create_credentials_exception("Invalid email or password")
+    if not user.confirmed:
+        raise create_credentials_exception("User has not confirmed email")
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
     return user
 
 
 async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+<<<<<<< HEAD
     # η συνάρτηση depends γίνεται πρώτα,
     # Η token είναι str, και για να βρεθεί η τιμή της, χρησιμοποίησε το Depends(oauth2_scheme).
     email = get_subject_for_token_type(token, "access")
     user = await get_user(email=email)
     if user is None:
         raise create_unauthorized_exception("Could not find user for this token")
+=======
+    email = get_subject_for_token_type(token, "access")
+    user = await get_user(email=email)
+    if user is None:
+        raise create_credentials_exception("Could not find user for this token")
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
     return user

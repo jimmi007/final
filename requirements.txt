@@ -13,4 +13,18 @@ python-multipart
 passlib[bcrypt]
 httpx
 aiofiles
+<<<<<<< HEAD
 b2sdk
+=======
+b2sdk
+fastapi
+uvicorn
+sqlalchemy
+databases
+psycopg2-binary
+psycopg2
+databases[asyncpg]
+bcrypt== 4.0.1
+passlib[crypt]==1.7.4
+sentry-sdk[fastapi]
+>>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
