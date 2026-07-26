@@ -1,0 +1,23 @@
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
+
+
+class userpost(BaseModel):
+    username: str
+    email: str
+    password: Optional[str]=None
+
+class User(userpost):
+
+
+1) uvicorn storeapi.main:app --reload(to anoigo sto main)
+Meta patao /docs
+
+2)anagnostou102@yahoo.gr trikala2
+
+@router.post("/register", status_code=201)
+an
+
+internal database-postgresql://restapi_db_g1em_user:oEVbcUHGxvgLFjWcdZV0XJFFW7MGclPO@dpg-d9ir3u3rjlhs73fe8m20-a/restapi_db_g1em
+external database-postgresql://restapi_db_g1em_user:oEVbcUHGxvgLFjWcdZV0XJFFW7MGclPO@dpg-d9ir3u3rjlhs73fe8m20-a.oregon-postgres.render.com/restapi_db_g1em
