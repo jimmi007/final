@@ -1,14 +1,47 @@
-from pydantic import BaseModel
+from typing import Optional
+
+from pydantic import BaseModel, ConfigDict
 
 
-class User(BaseModel):
-    id: int | None = None
-    email: str
+class UserPostIn(BaseModel):
+    body: str
+    image_url: Optional[str] = None
 
 
-class UserIn(User):
-    password: str
-<<<<<<< HEAD
-# // κληρονομεί το user
-=======
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
+class UserPost(UserPostIn):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+
+
+class UserPostWithLikes(UserPost):
+    model_config = ConfigDict(from_attributes=True)
+
+    likes: int
+
+
+class CommentIn(BaseModel):
+    body: str
+    post_id: int
+
+
+class Comment(CommentIn):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+
+
+class UserPostWithComments(BaseModel):
+    post: UserPostWithLikes
+    comments: list[Comment]
+
+
+class PostLikeIn(BaseModel):
+    post_id: int
+
+
+class PostLike(PostLikeIn):
+    id: int
+    user_id: int

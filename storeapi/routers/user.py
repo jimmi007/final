@@ -1,122 +1,47 @@
-import logging
-<<<<<<< HEAD
-from typing import Annotated
+from typing import Optional
 
-from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, HTTPException, Request, status, Form, Depends
-=======
-from fastapi.security import OAuth2PasswordRequestForm
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
-from storeapi import tasks
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-from storeapi.database import database, user_table
-from storeapi.models.user import UserIn
-from storeapi.security import (
-    authenticate_user,
-    create_access_token,
-    create_confirmation_token,
-    get_password_hash,
-    get_subject_for_token_type,
-    get_user,
-)
-<<<<<<< HEAD
-
-=======
-from storeapi.database import metadata,engine
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status, Depends
-from fastapi.security import OAuth2PasswordRequestForm
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-logger = logging.getLogger(__name__)
-router = APIRouter()
+from pydantic import BaseModel, ConfigDict
 
 
-@router.post("/register", status_code=201)
-<<<<<<< HEAD
-async def register(user: UserIn, request: Request):
-    logger.info("REGISTER endpoint called")
-=======
-async def register(user: UserIn, background_tasks: BackgroundTasks, request: Request):
-
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-    if await get_user(user.email):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="A user with that email already exists",
-<<<<<<< HEAD
-        )
-    # λάθος το getuser
-    # το httpexception εχεί status_code και detail
-    hashed_password = get_password_hash(user.password)
-    query = user_table.insert().values(email=user.email, password=hashed_password)
-    # εγγραφή για πρόσθεση mail passwoed
-    logger.debug(query)
-
-    await database.execute(query)
-    return {
-        "detail": "User created. Please confirm your email.",
-        "confirmation_url": request.url_for(
-            "confirm_email", token=create_confirmation_token(user.email)
-        ),
-    }
+class UserPostIn(BaseModel):
+    body: str
+    image_url: Optional[str] = None
 
 
-@router.post("/token")
-# η ιστοσελίδα που ανοίγει
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(form_data.username,form_data.password)
-=======
-            token=create_confirmation_token(user.email)
-        )
-    hashed_password = get_password_hash(user.password)
-    query = user_table.insert().values(email=user.email, password=hashed_password)
+class UserPost(UserPostIn):
+    model_config = ConfigDict(from_attributes=True)
 
-    logger.debug(query)
-
-    await database.execute(query)
-
-    logger.debug("Submitting background task to send email")
-
-    background_tasks.add_task(
-        tasks.send_user_registration_email,
-        user.email,
-        confirmation_url=request.url_for(
-            "confirm_email", token=create_confirmation_token(user.email)
-        ),
-    )
-    return {"detail": "User created. Please confirm your email.","token":create_confirmation_token(user.email)}
+    id: int
+    user_id: int
 
 
-@router.post("/token")
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    user = await authenticate_user(form_data.username, form_data.password)
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-    access_token = create_access_token(user.email)
-    return {"access_token": access_token, "token_type": "bearer"}
+class UserPostWithLikes(UserPost):
+    model_config = ConfigDict(from_attributes=True)
+
+    likes: int
 
 
-@router.get("/confirm/{token}")
-async def confirm_email(token: str):
-    email = get_subject_for_token_type(token, "confirmation")
-    query = (
-        user_table.update().where(user_table.c.email == email).values(confirmed=True)
-    )
-<<<<<<< HEAD
-    # το query είναι υποπίνακας φιλτραρισμένος βάσει το confirmed true,βρίσκει  βάσει email
-=======
-
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-    logger.debug(query)
-
-    await database.execute(query)
-    return {"detail": "User confirmed"}
+class CommentIn(BaseModel):
+    body: str
+    post_id: int
 
 
-<<<<<<< HEAD
-# εκτελεί η database και επιστρέφει json
-=======
-@router.delete("/delete/db")
-async def delete_db():
-    metadata.drop_all(bind=engine)
-    metadata.create_all(bind=engine)
-    return ({"detail": "database successfully deleted"})
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
+class Comment(CommentIn):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    user_id: int
+
+
+class UserPostWithComments(BaseModel):
+    post: UserPostWithLikes
+    comments: list[Comment]
+
+
+class PostLikeIn(BaseModel):
+    post_id: int
+
+
+class PostLike(PostLikeIn):
+    id: int
+    user_id: int

@@ -2,9 +2,9 @@ ruff
 black
 isort
 pytest
-<<<<<<< HEAD
+
 pytest-mock
-=======
+
 pytest-mock
 pyfakefs
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
+

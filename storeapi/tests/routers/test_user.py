@@ -1,95 +1,140 @@
 import pytest
-<<<<<<< HEAD
-from fastapi import Request
-=======
 from fastapi import BackgroundTasks
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 from httpx import AsyncClient
 
 
-async def register_user(async_client: AsyncClient, email: str, password: str):
+async def register_user(
+    async_client: AsyncClient,
+    email: str,
+    password: str,
+):
     return await async_client.post(
-        "/register", json={"email": email, "password": password}
+        "/register",
+        json={
+            "email": email,
+            "password": password,
+        },
     )
 
 
 @pytest.mark.anyio
 async def test_register_user(async_client: AsyncClient):
-    response = await register_user(async_client, "test@example.net", "1234")
+    response = await register_user(
+        async_client,
+        "test@example.net",
+        "1234",
+    )
+
     assert response.status_code == 201
     assert "User created" in response.json()["detail"]
 
 
 @pytest.mark.anyio
 async def test_register_user_already_exists(
-    async_client: AsyncClient, registered_user: dict
+    async_client: AsyncClient,
+    registered_user: dict,
 ):
     response = await register_user(
-        async_client, registered_user["email"], registered_user["password"]
+        async_client,
+        registered_user["email"],
+        registered_user["password"],
     )
+
     assert response.status_code == 400
     assert "already exists" in response.json()["detail"]
 
 
 @pytest.mark.anyio
-async def test_confirm_user(async_client: AsyncClient, mocker):
-<<<<<<< HEAD
-    spy = mocker.spy(Request, "url_for")
-    await register_user(async_client, "test@example.net", "1234")
+async def test_confirm_user(
+    async_client: AsyncClient,
+    mocker,
+):
+    spy = mocker.spy(
+        BackgroundTasks,
+        "add_task",
+    )
 
-    # We only call Request.url_for once, so this is OK.
-    # This is not a scalable solution.
-    # A better solution will be discussed in the next couple lectures.
-    confirmation_url = str(spy.spy_return)
-=======
-    spy = mocker.spy(BackgroundTasks, "add_task")
-    await register_user(async_client, "test@example.net", "1234")
+    await register_user(
+        async_client,
+        "test@example.net",
+        "1234",
+    )
 
-    confirmation_url = str(spy.call_args[1]["confirmation_url"])
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-    response = await async_client.get(confirmation_url)
+    confirmation_url = str(
+        spy.call_args.kwargs["confirmation_url"]
+    )
+
+    response = await async_client.get(
+        confirmation_url
+    )
 
     assert response.status_code == 200
     assert "User confirmed" in response.json()["detail"]
 
 
 @pytest.mark.anyio
-async def test_confirm_user_invalid_token(async_client: AsyncClient):
-    response = await async_client.get("/confirm/invalid_token")
+async def test_confirm_user_invalid_token(
+    async_client: AsyncClient,
+):
+    response = await async_client.get(
+        "/confirm/invalid_token"
+    )
+
     assert response.status_code == 401
 
 
 @pytest.mark.anyio
-async def test_confirm_user_expired_token(async_client: AsyncClient, mocker):
-    mocker.patch("storeapi.security.confirm_token_expire_minutes", return_value=-1)
-<<<<<<< HEAD
-    spy = mocker.spy(Request, "url_for")
-    await register_user(async_client, "test@example.net", "1234")
+async def test_confirm_user_expired_token(
+    async_client: AsyncClient,
+    mocker,
+):
+    mocker.patch(
+        "storeapi.security.confirm_token_expire_minutes",
+        return_value=-1,
+    )
 
-    confirmation_url = str(spy.spy_return)
-=======
-    spy = mocker.spy(BackgroundTasks, "add_task")
-    await register_user(async_client, "test@example.net", "1234")
+    spy = mocker.spy(
+        BackgroundTasks,
+        "add_task",
+    )
 
-    confirmation_url = str(spy.call_args[1]["confirmation_url"])
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
-    response = await async_client.get(confirmation_url)
+    await register_user(
+        async_client,
+        "test@example.net",
+        "1234",
+    )
+
+    confirmation_url = str(
+        spy.call_args.kwargs["confirmation_url"]
+    )
+
+    response = await async_client.get(
+        confirmation_url
+    )
 
     assert response.status_code == 401
     assert "Token has expired" in response.json()["detail"]
 
 
 @pytest.mark.anyio
-async def test_login_user_not_exists(async_client: AsyncClient):
+async def test_login_user_not_exists(
+    async_client: AsyncClient,
+):
     response = await async_client.post(
-        "/token", json={"email": "test@example.net", "password": "1234"}
+        "/token",
+        json={
+            "email": "test@example.net",
+            "password": "1234",
+        },
     )
+
     assert response.status_code == 401
 
 
 @pytest.mark.anyio
 async def test_login_user_not_confirmed(
-    async_client: AsyncClient, registered_user: dict
+    async_client: AsyncClient,
+    registered_user: dict,
 ):
     response = await async_client.post(
         "/token",
@@ -98,17 +143,21 @@ async def test_login_user_not_confirmed(
             "password": registered_user["password"],
         },
     )
-<<<<<<< HEAD
-    assert response.status_code == 400
-=======
+
     assert response.status_code == 401
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
 
 
 @pytest.mark.anyio
-async def test_login_user(async_client: AsyncClient, confirmed_user: dict):
+async def test_login_user(
+    async_client: AsyncClient,
+    confirmed_user: dict,
+):
     response = await async_client.post(
         "/token",
-        json={"email": confirmed_user["email"], "password": confirmed_user["password"]},
+        json={
+            "email": confirmed_user["email"],
+            "password": confirmed_user["password"],
+        },
     )
+
     assert response.status_code == 200

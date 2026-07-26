@@ -53,11 +53,10 @@ async def send_user_registration_email(email: str, confirmation_url: str):
 async def _generate_cute_creature_api(prompt: str):
     logger.debug("Generating cute creature")
     async with httpx.AsyncClient() as client:
-<<<<<<< HEAD
+
         # response = await client.get(url)
         # response.status_code,response.headers,response.text,response.json()
-=======
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
+
         try:
             response = await client.post(
                 "https://api.deepai.org/api/cute-creature-generator",
@@ -117,8 +116,8 @@ async def generate_and_add_to_post(
             f" Please click on the following link to view it: {post_url}"
         ),
     )
-<<<<<<< HEAD
+
     return response
-=======
-    return response
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
+
+
+
