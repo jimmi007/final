@@ -27,3 +27,4 @@ databases[asyncpg]
 bcrypt== 4.0.1
 passlib[crypt]==1.7.4
 sentry-sdk[fastapi]
+python-multipart

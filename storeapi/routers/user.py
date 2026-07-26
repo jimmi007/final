@@ -1,10 +1,18 @@
 import logging
+from typing import Annotated
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, Request, status
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Request,
+    status,
+)
 from fastapi.security import OAuth2PasswordRequestForm
 
 from storeapi.database import database, user_table
-from storeapi.models.user import Token, User, UserIn
+from storeapi.models.user import Token, UserIn
 from storeapi.security import (
     authenticate_user,
     create_access_token,
@@ -19,16 +27,24 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 
-@router.post("/register", status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/register",
+    status_code=status.HTTP_201_CREATED,
+)
 async def register_user(
     user: UserIn,
     background_tasks: BackgroundTasks,
     request: Request,
 ):
-    logger.info("Creating user", extra={"email": user.email})
+    logger.info(
+        "Creating user",
+        extra={"email": user.email},
+    )
 
     existing_user = await database.fetch_one(
-        user_table.select().where(user_table.c.email == user.email)
+        user_table.select().where(
+            user_table.c.email == user.email
+        )
     )
 
     if existing_user:
@@ -47,7 +63,10 @@ async def register_user(
 
     user_id = await database.execute(query)
 
-    confirmation_token = create_confirmation_token(user.email)
+    confirmation_token = create_confirmation_token(
+        user.email
+    )
+
     confirmation_url = request.url_for(
         "confirm_user",
         token=confirmation_token,
@@ -66,9 +85,15 @@ async def register_user(
     }
 
 
-@router.get("/confirm/{token}", name="confirm_user")
+@router.get(
+    "/confirm/{token}",
+    name="confirm_user",
+)
 async def confirm_user(token: str):
-    email = get_subject_for_token_type(token, "confirmation")
+    email = get_subject_for_token_type(
+        token,
+        "confirmation",
+    )
 
     query = (
         user_table.update()
@@ -78,17 +103,29 @@ async def confirm_user(token: str):
 
     await database.execute(query)
 
-    return {"detail": "User confirmed"}
+    return {
+        "detail": "User confirmed",
+    }
 
 
-@router.post("/token", response_model=Token)
-async def login(form_data: OAuth2PasswordRequestForm):
+@router.post(
+    "/token",
+    response_model=Token,
+)
+async def login(
+    form_data: Annotated[
+        OAuth2PasswordRequestForm,
+        Depends(),
+    ],
+):
     user = await authenticate_user(
         form_data.username,
         form_data.password,
     )
 
-    access_token = create_access_token(user.email)
+    access_token = create_access_token(
+        user.email
+    )
 
     return {
         "access_token": access_token,
