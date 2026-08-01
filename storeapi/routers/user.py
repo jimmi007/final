@@ -37,16 +37,14 @@ async def register_user(
     background_tasks: BackgroundTasks,
     request: Request,
 ):
-    logger.info(
-        "Creating user",
-        extra={"email": user.email},
-    )
+    print("1. Register started")
 
     existing_user = await database.fetch_one(
         user_table.select().where(
             user_table.c.email == user.email
         )
     )
+    print("2. Existing user checked")
 
     if existing_user:
         raise HTTPException(
@@ -55,6 +53,7 @@ async def register_user(
         )
 
     hashed_password = get_password_hash(user.password)
+    print("3. Password hashed")
 
     query = user_table.insert().values(
         email=user.email,
@@ -63,15 +62,18 @@ async def register_user(
     )
 
     user_id = await database.execute(query)
+    print("4. User inserted")
 
     confirmation_token = create_confirmation_token(
         user.email
     )
+    print("5. Token created")
 
     confirmation_url = request.url_for(
         "confirm_user",
         token=confirmation_token,
     )
+    print("6. URL created")
 
     background_tasks.add_task(
         send_simple_email,
@@ -79,35 +81,12 @@ async def register_user(
         "Confirm your account",
         f"Confirm your account here: {confirmation_url}",
     )
+    print("7. Email task added")
 
     return {
         "detail": "User created. Please confirm your email.",
         "id": user_id,
     }
-
-
-@router.get(
-    "/confirm/{token}",
-    name="confirm_user",
-)
-async def confirm_user(token: str):
-    email = get_subject_for_token_type(
-        token,
-        "confirmation",
-    )
-
-    query = (
-        user_table.update()
-        .where(user_table.c.email == email)
-        .values(confirmed=True)
-    )
-
-    await database.execute(query)
-
-    return {
-        "detail": "User confirmed",
-    }
-
 
 @router.post(
     "/token",
