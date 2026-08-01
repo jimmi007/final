@@ -8,11 +8,9 @@ from httpx import AsyncClient, Request, Response
 
 os.environ["ENV_STATE"] = "test"
 from storeapi.database import database, user_table  # noqa: E402
-<<<<<<< HEAD
 
-=======
 from storeapi.main import app  # noqa: E402
->>>>>>> 30b9f9e64566bd10701d9ee7a8064bc9146992bc
+
 
 
 @pytest.fixture(scope="session")

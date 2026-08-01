@@ -12,6 +12,11 @@ from storeapi.database import database, engine, metadata
 from storeapi.routers.post import router as post_router
 from storeapi.routers.upload import router as upload_router
 from storeapi.routers.user import router as user_router
+from fastapi import FastAPI
+
+
+app = FastAPI()
+
 
 
 # Logging στην κονσόλα του Render

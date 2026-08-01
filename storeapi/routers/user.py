@@ -131,3 +131,50 @@ async def login(
         "access_token": access_token,
         "token_type": "bearer",
     }
+
+@router.delete("/user", status_code=204)
+async def delete_user(
+    current_user: Annotated[
+        User,
+        Depends(get_current_user),
+    ],
+    background_tasks: BackgroundTasks,
+):
+    logger.info("Deleting user")
+
+    # Στείλε email στο background
+    background_tasks.add_task(
+        send_delete_email,
+        current_user.email,
+    )
+
+    # Διαγραφή likes
+    await database.execute(
+        like_table.delete().where(
+            like_table.c.user_id == current_user.id
+        )
+    )
+
+    # Διαγραφή comments
+    await database.execute(
+        comment_table.delete().where(
+            comment_table.c.user_id == current_user.id
+        )
+    )
+
+    # Διαγραφή posts
+    await database.execute(
+        post_table.delete().where(
+            post_table.c.user_id == current_user.id
+        )
+    )
+
+    # Διαγραφή χρήστη
+    await database.execute(
+        user_table.delete().where(
+            user_table.c.id == current_user.id
+        )
+    )
+    return {
+        "message": "User deleted successfully"
+    }
