@@ -74,6 +74,9 @@ like_table = sqlalchemy.Table(
 
 # SQLite χρειάζεται check_same_thread=False.
 # PostgreSQL δεν το χρειάζεται.
+if not config.DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is missing")
+
 connect_args = (
     {"check_same_thread": False}
     if config.DATABASE_URL.startswith("sqlite")

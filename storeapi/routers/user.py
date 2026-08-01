@@ -22,7 +22,9 @@ from storeapi.security import (
     get_subject_for_token_type,
 )
 from storeapi.tasks import send_simple_email
+import os
 
+print("MAIN:", __file__, flush=True)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)

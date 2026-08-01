@@ -12,14 +12,10 @@ from storeapi.database import database, engine, metadata
 from storeapi.routers.post import router as post_router
 from storeapi.routers.upload import router as upload_router
 from storeapi.routers.user import router as user_router
-from fastapi import FastAPI
+import os
 
+print("MAIN:", __file__, flush=True)
 
-app = FastAPI()
-
-
-
-# Logging στην κονσόλα του Render
 logging.basicConfig(
     level=logging.INFO,
     format="%(levelname)s | %(name)s | %(message)s",
@@ -28,7 +24,6 @@ logging.basicConfig(
 logger = logging.getLogger("storeapi")
 
 
-# Sentry, μόνο αν υπάρχει SENTRY_DSN
 sentry_dsn = getattr(config, "SENTRY_DSN", None)
 
 if sentry_dsn:
