@@ -10,7 +10,7 @@ from fastapi import (
     status,
 )
 from fastapi.security import OAuth2PasswordRequestForm
-
+from storeapi.security import get_current_user
 from storeapi.database import database, user_table
 from storeapi.models.user import Token, UserIn
 from storeapi.security import (
@@ -132,7 +132,7 @@ async def login(
         "token_type": "bearer",
     }
 
-@router.delete("/user", status_code=204)
+@router.delete("/user", status_code=200)
 async def delete_user(
     current_user: Annotated[
         User,
