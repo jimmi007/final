@@ -1,6 +1,7 @@
 import logging
 from typing import Annotated
 
+import sqlalchemy
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -9,22 +10,26 @@ from fastapi import (
     Request,
     status,
 )
-import sqlalchemy
 from fastapi.security import OAuth2PasswordRequestForm
-from storeapi.security import get_current_user
-from storeapi.database import database, user_table
-from storeapi.models.user import Token, UserIn
+
+from storeapi.database import (
+    comment_table,
+    database,
+    like_table,
+    post_table,
+    user_table,
+)
+from storeapi.models.user import Token, User, UserIn
 from storeapi.security import (
     authenticate_user,
     create_access_token,
     create_confirmation_token,
+    get_current_user,
     get_password_hash,
     get_subject_for_token_type,
 )
 from storeapi.tasks import send_simple_email
-import os
 
-print("MAIN:", __file__, flush=True)
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
@@ -39,14 +44,16 @@ async def register_user(
     background_tasks: BackgroundTasks,
     request: Request,
 ):
-    print("1. Register started")
+    logger.info(
+        "Creating user",
+        extra={"email": user.email},
+    )
 
     existing_user = await database.fetch_one(
         user_table.select().where(
             user_table.c.email == user.email
         )
     )
-    print("2. Existing user checked")
 
     if existing_user:
         raise HTTPException(
@@ -55,7 +62,6 @@ async def register_user(
         )
 
     hashed_password = get_password_hash(user.password)
-    print("3. Password hashed")
 
     query = user_table.insert().values(
         email=user.email,
@@ -64,18 +70,15 @@ async def register_user(
     )
 
     user_id = await database.execute(query)
-    print("4. User inserted")
 
     confirmation_token = create_confirmation_token(
         user.email
     )
-    print("5. Token created")
 
     confirmation_url = request.url_for(
         "confirm_user",
         token=confirmation_token,
     )
-    print("6. URL created")
 
     background_tasks.add_task(
         send_simple_email,
@@ -83,12 +86,35 @@ async def register_user(
         "Confirm your account",
         f"Confirm your account here: {confirmation_url}",
     )
-    print("7. Email task added")
 
     return {
         "detail": "User created. Please confirm your email.",
         "id": user_id,
     }
+
+
+@router.get(
+    "/confirm/{token}",
+    name="confirm_user",
+)
+async def confirm_user(token: str):
+    email = get_subject_for_token_type(
+        token,
+        "confirmation",
+    )
+
+    query = (
+        user_table.update()
+        .where(user_table.c.email == email)
+        .values(confirmed=True)
+    )
+
+    await database.execute(query)
+
+    return {
+        "detail": "User confirmed",
+    }
+
 
 @router.post(
     "/token",
@@ -114,7 +140,11 @@ async def login(
         "token_type": "bearer",
     }
 
-@router.delete("/user", status_code=status.HTTP_200_OK)
+
+@router.delete(
+    "/user",
+    status_code=status.HTTP_200_OK,
+)
 async def delete_user(
     current_user: Annotated[
         User,
@@ -127,13 +157,11 @@ async def delete_user(
         extra={"email": current_user.email},
     )
 
-    # Posts που ανήκουν στον χρήστη
     user_post_ids = (
         sqlalchemy.select(post_table.c.id)
         .where(post_table.c.user_id == current_user.id)
     )
 
-    # Likes που έκανε ο χρήστης ή αφορούν δικά του posts
     await database.execute(
         like_table.delete().where(
             sqlalchemy.or_(
@@ -143,7 +171,6 @@ async def delete_user(
         )
     )
 
-    # Comments που έκανε ο χρήστης ή αφορούν δικά του posts
     await database.execute(
         comment_table.delete().where(
             sqlalchemy.or_(
@@ -153,21 +180,18 @@ async def delete_user(
         )
     )
 
-    # Διαγραφή των posts του
     await database.execute(
         post_table.delete().where(
             post_table.c.user_id == current_user.id
         )
     )
 
-    # Διαγραφή χρήστη
     await database.execute(
         user_table.delete().where(
             user_table.c.id == current_user.id
         )
     )
 
-    # Email ενημέρωσης
     background_tasks.add_task(
         send_simple_email,
         current_user.email,
@@ -176,5 +200,5 @@ async def delete_user(
     )
 
     return {
-        "message": "User deleted successfully"
+        "message": "User deleted successfully",
     }
