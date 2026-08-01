@@ -9,6 +9,7 @@ from fastapi import (
     Request,
     status,
 )
+import sqlalchemy
 from fastapi.security import OAuth2PasswordRequestForm
 from storeapi.security import get_current_user
 from storeapi.database import database, user_table
@@ -132,7 +133,7 @@ async def login(
         "token_type": "bearer",
     }
 
-@router.delete("/user", status_code=200)
+@router.delete("/user", status_code=status.HTTP_200_OK)
 async def delete_user(
     current_user: Annotated[
         User,
@@ -140,29 +141,38 @@ async def delete_user(
     ],
     background_tasks: BackgroundTasks,
 ):
-    logger.info("Deleting user")
-
-    # Στείλε email στο background
-    background_tasks.add_task(
-        send_delete_email,
-        current_user.email,
+    logger.info(
+        "Deleting user",
+        extra={"email": current_user.email},
     )
 
-    # Διαγραφή likes
+    # Posts που ανήκουν στον χρήστη
+    user_post_ids = (
+        sqlalchemy.select(post_table.c.id)
+        .where(post_table.c.user_id == current_user.id)
+    )
+
+    # Likes που έκανε ο χρήστης ή αφορούν δικά του posts
     await database.execute(
         like_table.delete().where(
-            like_table.c.user_id == current_user.id
+            sqlalchemy.or_(
+                like_table.c.user_id == current_user.id,
+                like_table.c.post_id.in_(user_post_ids),
+            )
         )
     )
 
-    # Διαγραφή comments
+    # Comments που έκανε ο χρήστης ή αφορούν δικά του posts
     await database.execute(
         comment_table.delete().where(
-            comment_table.c.user_id == current_user.id
+            sqlalchemy.or_(
+                comment_table.c.user_id == current_user.id,
+                comment_table.c.post_id.in_(user_post_ids),
+            )
         )
     )
 
-    # Διαγραφή posts
+    # Διαγραφή των posts του
     await database.execute(
         post_table.delete().where(
             post_table.c.user_id == current_user.id
@@ -175,6 +185,15 @@ async def delete_user(
             user_table.c.id == current_user.id
         )
     )
+
+    # Email ενημέρωσης
+    background_tasks.add_task(
+        send_simple_email,
+        current_user.email,
+        "Account deleted",
+        "Your account has been deleted successfully.",
+    )
+
     return {
         "message": "User deleted successfully"
     }
