@@ -77,6 +77,9 @@ like_table = sqlalchemy.Table(
 if not config.DATABASE_URL:
     raise RuntimeError("DATABASE_URL is missing")
 
+if not config.SYNC_DATABASE_URL:
+    raise RuntimeError("SYNC_DATABASE_URL is missing")
+
 connect_args = (
     {"check_same_thread": False}
     if config.DATABASE_URL.startswith("sqlite")
@@ -85,24 +88,25 @@ connect_args = (
 
 
 engine = sqlalchemy.create_engine(
-    config.DATABASE_URL,
-    connect_args=connect_args,
+    config.SYNC_DATABASE_URL
 )
-
 
 metadata.create_all(engine)
 
 
-# Μικρό connection pool για PostgreSQL στο Render.
 database_options = (
-    {"min_size": 1, "max_size": 3}
+    {
+        "min_size": 1,
+        "max_size": 3,
+    }
     if config.DATABASE_URL.startswith("postgres")
     else {}
 )
-
 
 database = databases.Database(
     config.DATABASE_URL,
     force_rollback=config.DB_FORCE_ROLL_BACK,
     **database_options,
 )
+
+

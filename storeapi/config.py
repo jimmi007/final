@@ -1,14 +1,19 @@
 from functools import lru_cache
+from pathlib import Path
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent
+ENV_FILE = BASE_DIR / ".env"
 
 
 class BaseConfig(BaseSettings):
     ENV_STATE: str = "dev"
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE,
         extra="ignore",
     )
 
@@ -16,6 +21,7 @@ class BaseConfig(BaseSettings):
 class GlobalConfig(BaseConfig):
     SECRET_KEY: Optional[str] = None
     DATABASE_URL: Optional[str] = None
+    SYNC_DATABASE_URL: Optional[str] = None
     SENTRY_DSN: Optional[str] = None
     DB_FORCE_ROLL_BACK: bool = False
 
@@ -34,7 +40,7 @@ class GlobalConfig(BaseConfig):
 
 class DevConfig(GlobalConfig):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE,
         env_prefix="DEV_",
         extra="ignore",
     )
@@ -42,7 +48,7 @@ class DevConfig(GlobalConfig):
 
 class ProdConfig(GlobalConfig):
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE,
         env_prefix="PROD_",
         extra="ignore",
     )
@@ -50,17 +56,20 @@ class ProdConfig(GlobalConfig):
 
 class TestConfig(GlobalConfig):
     DATABASE_URL: str = "sqlite:///test.db"
+    SYNC_DATABASE_URL: str = "sqlite:///test.db"
     DB_FORCE_ROLL_BACK: bool = True
 
     model_config = SettingsConfigDict(
-        env_file=".env",
+        env_file=ENV_FILE,
         env_prefix="TEST_",
         extra="ignore",
     )
 
 
-@lru_cache()
-def get_config(env_state: str):
+@lru_cache
+def get_config():
+    env_state = BaseConfig().ENV_STATE
+
     configs = {
         "dev": DevConfig,
         "prod": ProdConfig,
@@ -75,4 +84,4 @@ def get_config(env_state: str):
     return config_class()
 
 
-config = get_config(BaseConfig().ENV_STATE)
+config = get_config()

@@ -1,6 +1,10 @@
 uvicorn storeapi.main:app --reload
 
-
+{
+  "message": "User created",
+  "id": 4,
+  "confirmation_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJrb25hIiwiZXhwIjoxNzg1NzM5NDQ2LCJ0eXBlIjoiY29uZmlybWF0aW9uIn0.a27nmnzGMjySTVSOKjuJMY_YWMoPQ9gUsLXhqzabPTI"
+}
   uvicorn storeapi.main:app --host 0.0.0.0 --port $PORT
 
   ENV_STATE=prod

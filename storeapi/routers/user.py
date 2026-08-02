@@ -75,23 +75,18 @@ async def register_user(
         user.email
     )
 
-    confirmation_url = request.url_for(
-        "confirm_user",
-        token=confirmation_token,
-    )
-
     background_tasks.add_task(
         send_simple_email,
         user.email,
         "Confirm your account",
-        f"Confirm your account here: {confirmation_url}",
+        f"Your confirmation token is: {confirmation_token}",
     )
 
     return {
-        "detail": "User created. Please confirm your email.",
+        "message": "User created",
         "id": user_id,
+        "confirmation_token": confirmation_token,
     }
-
 
 @router.get(
     "/confirm/{token}",
